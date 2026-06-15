@@ -1,0 +1,223 @@
+Timing is on.
+SET
+Time: 1.237 ms
+===================================================================
+BEACON LOAD TEST — 500k reports, partitioned (LIST by crisis_id) vs flat
+Mirrors production reports columns + indexes. Indexes built AFTER bulk load.
+===================================================================
+psql:/tmp/lt.sql:10: NOTICE:  extension "postgis" already exists, skipping
+CREATE EXTENSION
+Time: 0.442 ms
+DROP TABLE
+Time: 0.373 ms
+psql:/tmp/lt.sql:12: NOTICE:  table "reports_p" does not exist, skipping
+CREATE TABLE
+Time: 14.209 ms
+CREATE TABLE
+Time: 3.440 ms
+CREATE TABLE
+Time: 1.746 ms
+CREATE TABLE
+Time: 2.854 ms
+CREATE TABLE
+Time: 2.306 ms
+psql:/tmp/lt.sql:31: NOTICE:  table "reports_np" does not exist, skipping
+DROP TABLE
+Time: 0.071 ms
+CREATE TABLE
+Time: 1.265 ms
+--- Seeding 500,000 reports into crisis-big in 5 chunks (no indexes yet) ---
+DO
+Time: 1622.505 ms (00:01.623)
+INSERT 0 25000
+Time: 78.035 ms
+--- Mirroring into the flat table ---
+INSERT 0 525000
+Time: 574.912 ms
+--- Building indexes AFTER load (both tables) ---
+CREATE INDEX
+Time: 433.495 ms
+CREATE INDEX
+Time: 250.411 ms
+CREATE INDEX
+Time: 403.745 ms
+CREATE INDEX
+Time: 209.375 ms
+CREATE INDEX
+Time: 457.929 ms
+CREATE INDEX
+Time: 232.693 ms
+CREATE INDEX
+Time: 373.606 ms
+CREATE INDEX
+Time: 239.368 ms
+ANALYZE
+Time: 348.325 ms
+ANALYZE
+Time: 158.290 ms
+--- Row counts ---
+        t        | count  
+-----------------+--------
+ reports_p_c     |  12406
+ reports_p_b     |  12594
+ reports_p_big   | 500000
+ flat reports_np | 525000
+(4 rows)
+
+Time: 36.068 ms
+====== Q1 crisis-scoped map bbox — PARTITIONED (expect 1 partition) ======
+                                                                                                                     QUERY PLAN                                                                                                                     
+----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ Aggregate  (cost=9740.47..9740.48 rows=1 width=8) (actual time=22.388..22.389 rows=1 loops=1)
+   Buffers: shared hit=306 read=6800 written=6161
+   ->  Bitmap Heap Scan on reports_p_big reports_p  (cost=397.95..9705.09 rows=14150 width=0) (actual time=2.096..21.932 rows=13953 loops=1)
+         Recheck Cond: (geom && '0103000020E610000001000000050000009A999999991942409A999999991942409A9999999919424066666666662642406666666666264240666666666626424066666666662642409A999999991942409A999999991942409A99999999194240'::geometry)
+         Filter: (crisis_id = 'crisis-big'::text)
+         Heap Blocks: exact=7013
+         Buffers: shared hit=306 read=6800 written=6161
+         ->  Bitmap Index Scan on reports_p_big_geom_idx  (cost=0.00..394.41 rows=14150 width=0) (actual time=1.549..1.550 rows=13953 loops=1)
+               Index Cond: (geom && '0103000020E610000001000000050000009A999999991942409A999999991942409A9999999919424066666666662642406666666666264240666666666626424066666666662642409A999999991942409A999999991942409A99999999194240'::geometry)
+               Buffers: shared read=93 written=3
+ Planning:
+   Buffers: shared hit=81 read=6 dirtied=2 written=1
+ Planning Time: 0.333 ms
+ Execution Time: 22.413 ms
+(14 rows)
+
+Time: 23.443 ms
+------ Q1 FLAT (for comparison) ------
+                                                                                                                     QUERY PLAN                                                                                                                     
+----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ Aggregate  (cost=10204.90..10204.91 rows=1 width=8) (actual time=6.599..6.600 rows=1 loops=1)
+   Buffers: shared hit=6142 read=975 written=975
+   ->  Bitmap Heap Scan on reports_np  (cost=420.18..10169.27 rows=14254 width=0) (actual time=1.237..6.255 rows=13953 loops=1)
+         Recheck Cond: (geom && '0103000020E610000001000000050000009A999999991942409A999999991942409A9999999919424066666666662642406666666666264240666666666626424066666666662642409A999999991942409A999999991942409A99999999194240'::geometry)
+         Filter: (crisis_id = 'crisis-big'::text)
+         Heap Blocks: exact=7028
+         Buffers: shared hit=6142 read=975 written=975
+         ->  Bitmap Index Scan on reports_np_geom_idx  (cost=0.00..416.62 rows=14978 width=0) (actual time=0.801..0.801 rows=13953 loops=1)
+               Index Cond: (geom && '0103000020E610000001000000050000009A999999991942409A999999991942409A9999999919424066666666662642406666666666264240666666666626424066666666662642409A999999991942409A999999991942409A99999999194240'::geometry)
+               Buffers: shared read=89 written=89
+ Planning:
+   Buffers: shared hit=10
+ Planning Time: 0.096 ms
+ Execution Time: 6.613 ms
+(14 rows)
+
+Time: 6.867 ms
+====== Q2 latest-per-building in crisis bbox — PARTITIONED (map pins) ======
+                                                                                                                           QUERY PLAN                                                                                                                           
+----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ Subquery Scan on q  (cost=6919.66..7040.48 rows=17 width=11) (actual time=3.538..4.300 rows=3396 loops=1)
+   Filter: (q.rn = 1)
+   Buffers: shared hit=2871
+   ->  WindowAgg  (cost=6919.66..6997.33 rows=3452 width=35) (actual time=3.538..4.148 rows=3396 loops=1)
+         Run Condition: (row_number() OVER (?) <= 1)
+         Buffers: shared hit=2871
+         ->  Sort  (cost=6919.66..6928.29 rows=3452 width=27) (actual time=3.534..3.610 rows=3424 loops=1)
+               Sort Key: reports_p.building_id, reports_p.captured_at DESC, reports_p.id DESC
+               Sort Method: quicksort  Memory: 297kB
+               Buffers: shared hit=2871
+               ->  Bitmap Heap Scan on reports_p_big reports_p  (cost=99.04..6716.80 rows=3452 width=27) (actual time=0.355..1.711 rows=3424 loops=1)
+                     Recheck Cond: (geom && '0103000020E610000001000000050000009A999999991942409A999999991942409A9999999919424000000000002042400000000000204240000000000020424000000000002042409A999999991942409A999999991942409A99999999194240'::geometry)
+                     Filter: (crisis_id = 'crisis-big'::text)
+                     Heap Blocks: exact=2843
+                     Buffers: shared hit=2871
+                     ->  Bitmap Index Scan on reports_p_big_geom_idx  (cost=0.00..98.17 rows=3452 width=0) (actual time=0.178..0.178 rows=3424 loops=1)
+                           Index Cond: (geom && '0103000020E610000001000000050000009A999999991942409A999999991942409A9999999919424000000000002042400000000000204240000000000020424000000000002042409A999999991942409A999999991942409A99999999194240'::geometry)
+                           Buffers: shared hit=28
+ Planning:
+   Buffers: shared hit=41 read=1 written=1
+ Planning Time: 0.133 ms
+ Execution Time: 4.376 ms
+(22 rows)
+
+Time: 4.823 ms
+====== Q3 stats aggregate (damage breakdown) — PARTITIONED ======
+                                                                           QUERY PLAN                                                                            
+-----------------------------------------------------------------------------------------------------------------------------------------------------------------
+ Finalize GroupAggregate  (cost=13390.96..13392.23 rows=5 width=15) (actual time=29.254..30.469 rows=5 loops=1)
+   Group Key: reports_p.damage
+   Buffers: shared hit=7038 read=1723 written=60
+   ->  Gather Merge  (cost=13390.96..13392.13 rows=10 width=15) (actual time=29.251..30.465 rows=15 loops=1)
+         Workers Planned: 2
+         Workers Launched: 2
+         Buffers: shared hit=7038 read=1723 written=60
+         ->  Sort  (cost=12390.94..12390.95 rows=5 width=15) (actual time=25.679..25.679 rows=5 loops=3)
+               Sort Key: reports_p.damage
+               Sort Method: quicksort  Memory: 25kB
+               Buffers: shared hit=7038 read=1723 written=60
+               Worker 0:  Sort Method: quicksort  Memory: 25kB
+               Worker 1:  Sort Method: quicksort  Memory: 25kB
+               ->  Partial HashAggregate  (cost=12390.83..12390.88 rows=5 width=15) (actual time=25.665..25.665 rows=5 loops=3)
+                     Group Key: reports_p.damage
+                     Batches: 1  Memory Usage: 24kB
+                     Buffers: shared hit=7022 read=1723 written=60
+                     Worker 0:  Batches: 1  Memory Usage: 24kB
+                     Worker 1:  Batches: 1  Memory Usage: 24kB
+                     ->  Parallel Seq Scan on reports_p_big reports_p  (cost=0.00..11349.17 rows=208333 width=7) (actual time=0.004..12.679 rows=166667 loops=3)
+                           Filter: (crisis_id = 'crisis-big'::text)
+                           Buffers: shared hit=7022 read=1723 written=60
+ Planning:
+   Buffers: shared hit=6
+ Planning Time: 0.064 ms
+ Execution Time: 30.484 ms
+(26 rows)
+
+Time: 30.681 ms
+====== Q4 keyset pagination page 1 — PARTITIONED (reports list) ======
+                                                                                       QUERY PLAN                                                                                       
+----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ Limit  (cost=0.51..6.65 rows=50 width=19) (actual time=0.049..0.071 rows=50 loops=1)
+   Buffers: shared hit=43 read=11
+   ->  Incremental Sort  (cost=0.51..61402.92 rows=500000 width=19) (actual time=0.049..0.068 rows=50 loops=1)
+         Sort Key: reports_p.captured_at DESC, reports_p.id DESC
+         Presorted Key: reports_p.captured_at
+         Full-sort Groups: 2  Sort Method: quicksort  Average Memory: 27kB  Peak Memory: 27kB
+         Buffers: shared hit=43 read=11
+         ->  Index Scan using reports_p_big_crisis_id_captured_at_idx on reports_p_big reports_p  (cost=0.42..38902.92 rows=500000 width=19) (actual time=0.013..0.061 rows=51 loops=1)
+               Index Cond: (crisis_id = 'crisis-big'::text)
+               Buffers: shared hit=43 read=11
+ Planning Time: 0.064 ms
+ Execution Time: 0.078 ms
+(12 rows)
+
+Time: 0.244 ms
+====== Q5 MVT tile bbox, NO crisis (cross-partition GIST) — "near me" ======
+                                                                                                                        QUERY PLAN                                                                                                                        
+----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ Aggregate  (cost=158.71..158.72 rows=1 width=8) (actual time=0.055..0.055 rows=1 loops=1)
+   Buffers: shared hit=41 read=2
+   ->  Append  (cost=0.15..158.61 rows=39 width=0) (actual time=0.022..0.053 rows=37 loops=1)
+         Buffers: shared hit=41 read=2
+         ->  Index Scan using reports_p_b_geom_idx on reports_p_b reports_p_1  (cost=0.15..8.17 rows=1 width=0) (actual time=0.006..0.006 rows=0 loops=1)
+               Index Cond: (geom && '0103000020E610000001000000050000007B14AE47E11A42407B14AE47E11A42407B14AE47E11A4240EC51B81E851B4240EC51B81E851B4240EC51B81E851B4240EC51B81E851B42407B14AE47E11A42407B14AE47E11A42407B14AE47E11A4240'::geometry)
+               Buffers: shared read=1
+         ->  Bitmap Heap Scan on reports_p_big reports_p_2  (cost=4.56..142.08 rows=36 width=0) (actual time=0.015..0.040 rows=37 loops=1)
+               Recheck Cond: (geom && '0103000020E610000001000000050000007B14AE47E11A42407B14AE47E11A42407B14AE47E11A4240EC51B81E851B4240EC51B81E851B4240EC51B81E851B4240EC51B81E851B42407B14AE47E11A42407B14AE47E11A42407B14AE47E11A4240'::geometry)
+               Heap Blocks: exact=37
+               Buffers: shared hit=41
+               ->  Bitmap Index Scan on reports_p_big_geom_idx  (cost=0.00..4.55 rows=36 width=0) (actual time=0.012..0.012 rows=37 loops=1)
+                     Index Cond: (geom && '0103000020E610000001000000050000007B14AE47E11A42407B14AE47E11A42407B14AE47E11A4240EC51B81E851B4240EC51B81E851B4240EC51B81E851B4240EC51B81E851B42407B14AE47E11A42407B14AE47E11A42407B14AE47E11A4240'::geometry)
+                     Buffers: shared hit=4
+         ->  Index Scan using reports_p_c_geom_idx on reports_p_c reports_p_3  (cost=0.15..8.17 rows=1 width=0) (actual time=0.005..0.005 rows=0 loops=1)
+               Index Cond: (geom && '0103000020E610000001000000050000007B14AE47E11A42407B14AE47E11A42407B14AE47E11A4240EC51B81E851B4240EC51B81E851B4240EC51B81E851B4240EC51B81E851B42407B14AE47E11A42407B14AE47E11A42407B14AE47E11A4240'::geometry)
+               Buffers: shared read=1
+         ->  Seq Scan on reports_p_default reports_p_4  (cost=0.00..0.00 rows=1 width=0) (actual time=0.001..0.001 rows=0 loops=1)
+               Filter: (geom && '0103000020E610000001000000050000007B14AE47E11A42407B14AE47E11A42407B14AE47E11A4240EC51B81E851B4240EC51B81E851B4240EC51B81E851B4240EC51B81E851B42407B14AE47E11A42407B14AE47E11A42407B14AE47E11A4240'::geometry)
+ Planning:
+   Buffers: shared hit=31 read=4
+ Planning Time: 0.192 ms
+ Execution Time: 0.064 ms
+(23 rows)
+
+Time: 0.362 ms
+--- sizes ---
+           obj           |   sz    
+-------------------------+---------
+ reports_p total         | 0 bytes
+ reports_p_big partition | 162 MB
+(2 rows)
+
+Time: 0.392 ms
+DONE.

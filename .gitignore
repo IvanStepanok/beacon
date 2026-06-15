@@ -1,0 +1,37 @@
+# ─────────────────────────────────────────────────────────────────────────────
+# Meta-repo .gitignore (the "beacon" front-door repo).
+# The three code repos (backend/, dashboard/, Mobile app/) are SEPARATE git repos
+# published on their own — they are excluded here so the meta repo does not embed
+# them. The meta repo carries only the front-door docs: README, LICENSE, SECURITY,
+# CONTRIBUTING, and the publishable docs/.
+# See docs/PUBLISH-CHECKLIST.md (INTERNAL) for the full publication runbook.
+# ─────────────────────────────────────────────────────────────────────────────
+
+# --- Independent code repos (published separately) ---
+/backend/
+/dashboard/
+/Mobile app/
+
+# --- NEVER publish: internal harness, working docs, challenge IP, 3rd-party assets ---
+/.claude/
+/.vscode/
+/SUBMISSION-PLAN.md
+/submission/
+/docs/PUBLISH-CHECKLIST.md
+/requirements/
+/UNDP design/
+
+# --- ML working dir (provenance is published via Mobile app/ml/ + bundled models) ---
+/ml/
+
+# --- Marketing / heavy media (keep out of the code/docs front door) ---
+*.mp4
+/damage-picture.png
+/damage-picture.jpeg
+/test-shots/
+
+# --- OS / editor cruft ---
+.DS_Store
+**/.DS_Store
+*.swp
+.idea/
