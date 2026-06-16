@@ -7,12 +7,15 @@ your contributions are licensed under the same terms. For security issues, follo
 
 ## Repository layout
 
-| Path | Stack |
+Beacon ships as four public Apache-2.0 repos; this `beacon` repo is the docs front door. Clone the
+component you want to work on:
+
+| Repo / path | Stack |
 |---|---|
-| `backend/` | Go 1.26 (chi + pgx) + PostgreSQL 16 / PostGIS |
-| `dashboard/` | Next.js 16 + React 19 + Tailwind + MapLibre (analyst console) |
-| `Mobile app/` | Kotlin Multiplatform + Compose Multiplatform (Android + iOS reporter app) |
-| `docs/` | Status, architecture, data quality, incentives, operational model, governance, data dictionary, load test, publication checklist |
+| [`beacon-backend`](https://github.com/IvanStepanok/beacon-backend) | Go 1.26 (chi + pgx) + PostgreSQL 16 / PostGIS |
+| [`beacon-dashboard`](https://github.com/IvanStepanok/beacon-dashboard) | Next.js 16 + React 19 + Tailwind + MapLibre (analyst console) |
+| [`beacon-mobile`](https://github.com/IvanStepanok/beacon-mobile) | Kotlin Multiplatform + Compose Multiplatform (Android + iOS reporter app) |
+| `docs/` (this repo) | Status, architecture, data quality, incentives, operational model, governance, data dictionary, load test |
 
 Start with [`docs/STATUS.md`](docs/STATUS.md), the single source of truth for what is done
 vs not. The API surface is defined in `backend/internal/api/router.go` (overview in

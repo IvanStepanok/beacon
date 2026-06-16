@@ -52,12 +52,12 @@ coexist (each client ignores keys it doesn't know).
 | `version` | int | no | Server-authoritative per-building version |
 | `supersedesReportId` | string | yes | Previous report for the same building |
 | `description` | object | yes | `{original, originalLang, translated, translatedLang?}`; `translated` coalesces to the original until LibreTranslate has run; stripped in public projection |
-| `aiLevel` | string | yes | Advisory only (the AI helper is a stub today) |
+| `aiLevel` | string | yes | Advisory only; suggested by the on-device MobileNetV3 classifier, the human always confirms |
 | `aiConfidence` | int | yes | Advisory only |
 | `photos` | object[] | no | `{localPath, remoteUrl?, sizeBytes}` |
 | `sizeBytes`, `sizeMb` | int64 / number | no | Payload size |
 | `modular` | object | yes | Secondary-impacts blob; see §2 |
-| `anonymization` | object | no | `{anonymous, exifStripped, facesBlurred, platesBlurred}`; `facesBlurred`/`platesBlurred` are honestly `false` (no blur is implemented) |
+| `anonymization` | object | no | `{anonymous, exifStripped, facesBlurred, platesBlurred}`. EXIF stripping and on-device face blur (ML Kit on Android, Apple Vision on iOS) are implemented and run before upload. `facesBlurred` is `true` when faces were detected and blurred, `false` when none were found or the detector was unavailable; `platesBlurred` is best-effort (heuristic) and often `false` |
 | `clusters` | string[] (enum) | no | `slsc\|health\|wash\|education\|food_security\|protection\|logistics\|nutrition\|etc\|cccm\|early_recovery` |
 | `isMine` | bool | no | True when the caller's `X-Device-Id` matches the submitter |
 | `synced` | bool | no | Always true on server reads |

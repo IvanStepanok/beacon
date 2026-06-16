@@ -72,5 +72,8 @@ unauthenticated. The `/public` heatmap page renders only this tier.
   queueing or assignment engine.
 - Freshness SLA dashboards (time-to-verify metrics, stale-report alerts): `ageMin` is
   exposed per report; no SLA tracking UI exists.
-- AI damage-grade suggestion remains an advisory stub. See the AI/CV section in
+- AI damage-grade suggestion is shipped as a real on-device MobileNetV3 advisory classifier
+  (TensorFlow Lite on Android, Core ML on iOS), human-in-the-loop — the reporter always sets the
+  final grade. What is still "not yet": its weakest class is *partial* (F1 0.531), and flood/conflict
+  imagery is unvalidated, which is exactly why it only ever *suggests*. See the AI/CV section in
   [`STATUS.md`](./STATUS.md).

@@ -28,7 +28,7 @@ not to *replace* the response-coordination systems that already own tasking and 
 | **Regional structure** | 5 Regional Bureaus (RBA/RBAS/RBAP/RBEC/RBLAC) over Country Offices; Crisis Bureau (HQ) holds tools/sets Level. | **Role-based multi-region access** (field validator / CO analyst → one crisis; regional analyst → many; crisis admin → all). 6 langs+RTL map to the bureaus (RBAS=Arabic, RBLAC=Spanish, RBEC=Russian). |
 | **Incumbent to beat** | UNOSAT field validation (Myanmar 2025) used **UN-ASIGN** for 1,000+ geolocated photos. | Match UN-ASIGN capture; differentiate with crowdsourcing + offline-first + on-device AI + per-footprint versioning; be a UN-ingestible feed (standards exports below). |
 | **Coordination/tasking** | IASC clusters by sector; **2026 Humanitarian Reset → 8 clusters**, shelter/damage → new **SLSC**; standalone Early Recovery (UNDP) phased out end-2026. OCHA runs CODs + 3W/4W + HDX. | **Deliberate boundary:** Beacon does **not** run dispatch/tasking; that belongs to the responder org's existing systems (INSARAG worksite, CAD, cluster 4W). Beacon emits verified, P-code-tagged ground truth those systems ingest. Per-report cluster/sector tagging is **roadmap** (see below). |
-| **Recovery financing** | Government-led tripartite **PDNA** (UNDP/WB/EU), structured **by sector × admin area**; **DaLA**: damage = units × replacement cost. ~5–6 week Flash Appeal/CERF window. | Export the **standards pack** (GeoJSON / HXL-CSV / GeoPackage / KML / Shapefile) with ADM0–ADM3 P-code columns + damage-tier counts per admin area, the inputs a PDNA Volume B pivot is built from. (Asset-valuation attributes for full DaLA costing are roadmap.) |
+| **Recovery financing** | Government-led tripartite **PDNA** (UNDP/WB/EU), structured **by sector × admin area**; **DaLA**: damage = units × replacement cost. ~5–6 week Flash Appeal/CERF window. | Export the **standards pack** (GeoJSON / HXL-CSV / GeoPackage / KML / Shapefile) with ADM1–ADM3 P-code columns + damage-tier counts per admin area, the inputs a PDNA Volume B pivot is built from. (ADM0/country sits in the report's stored admin chain but is not emitted as an export column; asset-valuation attributes for full DaLA costing are roadmap.) |
 
 ## Report & crisis lifecycle (as shipped)
 Beacon's lifecycle is verification-centred rather than dispatch-centred. Credibility ("is this real?")
@@ -122,21 +122,23 @@ endpoint for de-identified aggregates.
   Sharing Agreements, documented (`data-sharing-and-sovereignty.md`,
   `data-controller-and-breach-response.md`); **named controller is a binding pre-deployment gate**.
 - **Security by design** — **[Implemented]:** TLS at edge + enforced DB-transit TLS, RBAC + audit,
-  at-rest AES-256-GCM for photos + sensitive secrets, MFA (TOTP), mobile certificate pinning.
-  **[Planned]:** full-cluster/backup/device-cache at-rest encryption, on-device face/plate blur,
-  automated retention/purge job. (Authoritative: STATUS.md security table.)
+  at-rest AES-256-GCM for photos + sensitive secrets, MFA (TOTP), mobile certificate pinning,
+  on-device face blur (ML Kit / Apple Vision). **[Planned]:** full-cluster/backup/device-cache
+  at-rest encryption, the blur-failure fallback + server-side anonymisation re-check (licence-plate
+  redaction is best-effort today), automated retention/purge job. (Authoritative: STATUS.md security table.)
 - **Accountability to Affected People**: accessible UX (6 langs+RTL, low-literacy-friendly,
   offline-first), feedback channel, gender/child sensitivity.
 
 ## Gap analysis vs the shipped build
 > **Authoritative build state is `docs/STATUS.md`.** This is the research-time strategy snapshot,
-> reconciled. Two clarifications on "HAVE": on-device anonymization = **EXIF stripping only**
-> (face/plate blur is **[Planned]**, only a boolean flag is stored), and the on-device AI is a real
+> reconciled. Two clarifications on "HAVE": on-device anonymization = **EXIF stripping + on-device
+> face blur** (ML Kit on Android / Apple Vision on iOS; licence-plate redaction is best-effort, and
+> the blur-failure fallback + server-side re-check are **[Planned]**), and the on-device AI is a real
 > **MobileNetV3 advisory classifier** (human-in-the-loop, never authoritative).
 
 **HAVE (built):** per-crisis multi-tenancy · PostGIS geometry · per-building versioning ·
 verification states + immutable audit · offline-first idempotent submission · on-device EXIF
-stripping · location fallbacks (footprint/Plus Code/landmark) · **P-code/admin tagging (COD-AB + GB
+stripping + face blur · location fallbacks (footprint/Plus Code/landmark) · **P-code/admin tagging (COD-AB + GB
 fallback)** · **RBAC multi-region (5 roles)** · **GLIDE + crisis Level** · **emergent-crisis
 lifecycle** · **H3 hotspots** · **export pack: GeoJSON / HXL-CSV / GeoPackage / KML / Shapefile with
 P-code columns** · **governance pack: DPIA + retention + controller + breach SOP + DSA** ·
@@ -147,7 +149,8 @@ codes · life-safety routing · danger zones (rationale in *Deliberate scope bou
 
 **ROADMAP (not built):** configurable cluster/sector tagging · asset-valuation attributes ·
 close-the-loop reporter notification · real analyst IdP · OpenRosa/XLSForm + HDX publish · full
-at-rest/backup encryption + automated purge job + on-device face/plate blur.
+at-rest/backup encryption + automated purge job · trained licence-plate detector + blur-failure
+fallback (on-device face blur itself ships today).
 
 ## Recommended roadmap
 **NOW (deployability core) — DONE:** P-code stamping ✅ · governance pack (DPIA + retention + named-
@@ -156,8 +159,8 @@ interoperability export pack (HXL-CSV + GPKG + Shapefile + KML + GeoJSON, P-code
 core security controls (DB-TLS, at-rest for photos+secrets, MFA, cert-pinning) ✅.
 
 **NEXT:** configurable cluster/sector tagging + 4W overlay · asset-valuation attributes (DaLA) ·
-real analyst IdP (Azure AD/OIDC) · automated retention/purge job · on-device face/plate blur ·
-full-cluster/backup at-rest encryption.
+real analyst IdP (Azure AD/OIDC) · automated retention/purge job · trained licence-plate detector +
+blur-failure fallback · full-cluster/backup at-rest encryption.
 
 **LATER:** OpenRosa/XLSForm + HDX (CKAN/HAPI) publish · close-the-loop reporter notification +
 reconstruction-tracking mode · consume RAPIDA/Copernicus + open-footprints baseline; benchmark vs

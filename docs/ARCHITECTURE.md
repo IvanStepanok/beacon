@@ -74,9 +74,13 @@ All three repos in this workspace: `backend/` (Go), `Mobile app/` (KMP), `dashbo
 
 ## Scale (measured, [`LOAD-TEST.md`](./LOAD-TEST.md))
 
-- 525k synthetic reports, PostgreSQL 16 + PostGIS 3.4: every interactive query
-  sub-30 ms (map bbox 6.6–22 ms, map pins 4.4 ms, keyset page 0.08 ms, full-crisis
-  stats aggregate 30 ms). Storage: 162 MB per 500k-report crisis.
+- 525k synthetic reports, PostgreSQL 16 + PostGIS 3.4: every interactive **database query**
+  runs sub-30 ms by EXPLAIN ANALYZE execution time (map bbox 6.6 ms on the deployed flat table,
+  map pins 4.4 ms, keyset page 0.08 ms, full-crisis stats aggregate 30 ms; raw output in
+  [`load-test-explain.txt`](./load-test-explain.txt)). This is DB execution time, **not** end-to-end
+  HTTP latency: measured end-to-end response at 500k is ~140 ms–1 s including serialization
+  (`backend/docs/SCALE-BENCHMARK.md`). The brief sets no latency target, only volume tiers.
+  Storage: 162 MB per 500k-report crisis.
 - Honest schema note: the deployed `reports` table is flat + indexed (GIST geom,
   crisis_id-leading btrees) and meets the targets at 525k rows as measured.
   `LIST (crisis_id)` partitioning is the benchmarked migration path for
@@ -97,9 +101,11 @@ All three repos in this workspace: `backend/` (Go), `Mobile app/` (KMP), `dashbo
   The `/public` heatmap renders only this tier.
 - Analysts: JWT + bcrypt, 5 roles, crisis-scoped, audit actor from token
   (`backend/internal/auth/`, migrations `00006`). Verification decisions audited.
-- Honest gaps (encryption at rest, MFA, cert pinning, purge job, real IdP) are tracked as
-  binding pre-deployment gates in [`STATUS.md`](./STATUS.md) and `SECURITY.md`, not
-  claimed here.
+- In place: RBAC + audit + coarsening (above), at-rest AES-256-GCM for photos + the TOTP
+  secret, enforced DB-transit TLS, MFA (TOTP), mobile certificate pinning, on-device EXIF
+  strip + face blur. Honest remaining gaps (full-cluster/backup/device-cache encryption,
+  automated purge job, real IdP) are tracked as binding pre-deployment gates in
+  [`STATUS.md`](./STATUS.md) and `SECURITY.md`, not claimed here.
 
 ## Export surface
 

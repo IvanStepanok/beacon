@@ -8,7 +8,7 @@
 > **✅ IMPLEMENTED** (present and verified in the current build), **🟡 PARTIAL**, or
 > **🔜 PLANNED** (designed, not yet built). The authoritative build state is
 > [`docs/STATUS.md`](./STATUS.md); where this document and STATUS.md differ, STATUS.md wins.
-> Roles referenced below (Community reporter, Field validator, CO analyst/dispatcher, Regional
+> Roles referenced below (Community reporter, Field validator, CO analyst, Regional
 > Bureau analyst, Crisis Bureau/CRU admin, External consumer) are defined in
 > [`docs/OPERATIONAL-MODEL.md`](./OPERATIONAL-MODEL.md) §"Actor & role model".
 
@@ -39,9 +39,9 @@ The 48-hour clock only holds if these are standing arrangements, not T+0 work:
 | # | Item | Owner | Status |
 |---|---|---|---|
 | 0.1 | **Standing infrastructure**: backend + dashboard + LibreTranslate run as Docker Compose behind Traefik/Let's Encrypt; embedded migrations mean a fresh region re-host is `docker compose up` + env vars. The current MVP host is the demo server; a UNDP-controlled host (region chosen per the sovereignty policy, [`governance/data-sharing-and-sovereignty.md`](./governance/data-sharing-and-sovereignty.md)) is part of handover | Crisis Bureau / platform team | ✅ IMPLEMENTED (demo host live); 🔜 PLANNED (UNDP-controlled hosting per deployment) |
-| 0.2 | **Open source**: repository licensed Apache-2.0 (`LICENSE`), build instructions in `CONTRIBUTING.md`, vulnerability reporting in `SECURITY.md`; any partner can audit, self-host, or fork | RaccoonGang → UNDP | 🟡 READY: Apache-2.0 licensed, publication checklist prepared ([`docs/PUBLISH-CHECKLIST.md`](./PUBLISH-CHECKLIST.md)); the repos have **no public remotes yet** |
+| 0.2 | **Open source**: repository licensed Apache-2.0 (`LICENSE`), build instructions in `CONTRIBUTING.md`, vulnerability reporting in `SECURITY.md`; any partner can audit, self-host, or fork | RaccoonGang → UNDP | ✅ IMPLEMENTED: Apache-2.0 licensed and **published** — four public GitHub repos (`IvanStepanok/beacon`, `-backend`, `-dashboard`, `-mobile`) |
 | 0.3 | **Governance pack adopted**: DPIA reviewed, retention schedule and breach SOP signed, controller-naming template ready ([`governance/`](./governance/README.md)) | Crisis Bureau DPO | ✅ IMPLEMENTED (documents); adoption is per-deployment |
-| 0.4 | **Security go/no-go gates closed**: encryption at rest, MFA for export roles, retention purge job, cert pinning (DPIA §10 binding pre-deployment conditions, tracked in [`STATUS.md`](./STATUS.md) §"Security & privacy controls") | platform team | 🔜 PLANNED: **must be closed before a real production deployment**; the 48h plan assumes they are closed at T-minus, never rushed at T+0 |
+| 0.4 | **Security go/no-go gates closed**: MFA, cert pinning, at-rest AES-256-GCM (photos + secrets) and enforced DB-TLS are done; the remaining DPIA §10 gates — full-cluster/backup encryption + automated retention purge — close before production (tracked in [`STATUS.md`](./STATUS.md) §"Security & privacy controls") | platform team | 🟡 PARTIAL: core controls shipped; full-cluster/backup encryption + purge job remain pre-deployment, never rushed at T+0 |
 | 0.5 | **Dormant store listings**: app pre-published on Google Play + App Store as a generic "Beacon — crisis reporting" app, updated rarely, so no store review sits on the critical path at T+0 | platform team | 🔜 PLANNED (no listings exist today) |
 | 0.6 | **Signed release APK pipeline**: reproducible signed build + hosting under a stable URL | platform team | 🟡 PARTIAL (Android debug build verified green; release signing + hosting checklist not yet produced) |
 | 0.7 | **Roster**: per-region on-call analyst accounts and a validator-trainer roster (maps to SURGE/CRT deployment in OPERATIONAL-MODEL.md) | Regional Bureaus | 🔜 PLANNED (operational arrangement) |
@@ -103,9 +103,9 @@ order they work **today**:
    will not install an app; the existing public submit API (anonymous, `X-Device-Id`-keyed, see
    `backend/README.md` and [`docs/DATA-DICTIONARY.md`](./DATA-DICTIONARY.md)) already supports it.
 
-**Open-sourcing as distribution**: the Apache-2.0 license (§0.2; publication itself is pending,
-see [`docs/PUBLISH-CHECKLIST.md`](./PUBLISH-CHECKLIST.md)) lets national authorities or NGOs
-re-host the entire stack inside their own jurisdiction when data-sovereignty rules require it.
+**Open-sourcing as distribution**: the Apache-2.0 license (§0.2; the four repos are public on
+GitHub) lets national authorities or NGOs re-host the entire stack inside their own jurisdiction
+when data-sovereignty rules require it.
 See the transfer/due-diligence rules in
 [`governance/data-sharing-and-sovereignty.md`](./governance/data-sharing-and-sovereignty.md).
 
@@ -208,12 +208,12 @@ first report. This document deliberately **points** rather than duplicates:
 auto-attach; global auto-Area (zero GIS prep); offline-first capture/sync; 6 UN languages + RTL;
 LibreTranslate intake translation; RBAC dashboard with analyst verification; interop exports
 (GeoJSON / HXL-CSV / GPKG / KML / Shapefile); per-crisis capture-form configuration (require/hide
-of existing sections via crisis form overrides, §5); live help site; Apache-2.0 licensed (public
-publication pending, [`docs/PUBLISH-CHECKLIST.md`](./PUBLISH-CHECKLIST.md)); governance
-documentation pack; scale-validated schema.
+of existing sections via crisis form overrides, §5); live help site; Apache-2.0 licensed and
+**published** (four public GitHub repos); governance documentation pack; scale-validated schema.
 
 **Planned (🔜), the honest gap list:** dormant store listings; signed-release APK pipeline +
 hosted QR (partial); MDM channel; reporter web/PWA fallback; real IdP; push notifications;
 authoring entirely new form question types per crisis; printed reporter/validator one-pagers and
-awareness asset templates; the DPIA §10 security gates (encryption at rest, MFA, retention purge,
-cert pinning), which are pre-deployment conditions, not 48-hour-window work.
+awareness asset templates; the remaining DPIA §10 security gates (full-cluster/backup encryption,
+automated retention purge), which are pre-deployment conditions, not 48-hour-window work (MFA, cert
+pinning, and at-rest photo/secret encryption already ship).

@@ -43,7 +43,7 @@ Mobile (KMP):
 
 Dashboard: "Dispatch" surface renamed "Verification & triage" (honest framing: Beacon supports verification + triage handoff, it is not a SAR dispatch system) _(this verification & triage / dispatch console was later removed, not in the current build; the shipped flow is inline verify/flag plus the crisis confirm/dismiss lifecycle)_; public `/public` heatmap page (coarsened, verified-only, shareable without login); print brief (one-page situation summary for offline handoff).
 
-Docs: new `ARCHITECTURE.md`, `DATA-QUALITY.md`, `INCENTIVES.md`, `PUBLISH-CHECKLIST.md`, root `README.md`; honesty pass over STATUS / LOAD-TEST / RAPID-DEPLOYMENT-48H (stale "in progress"/"roadmap" rows, flat-vs-partitioned schema wording, open-source publication status).
+Docs: new `ARCHITECTURE.md`, `DATA-QUALITY.md`, `INCENTIVES.md`, root `README.md`; honesty pass over STATUS / LOAD-TEST / RAPID-DEPLOYMENT-48H (stale "in progress"/"roadmap" rows, flat-vs-partitioned schema wording, open-source publication status).
 
 ---
 

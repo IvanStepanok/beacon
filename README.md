@@ -13,9 +13,9 @@ UNDP "Build the Future of Crisis Mapping" challenge.
 
 | Component | Stack | Where |
 |---|---|---|
-| Reporter mobile app | Kotlin Multiplatform + Compose (Android + iOS), Voyager + MVI + Koin, MapLibre | [`Mobile app/`](Mobile%20app/) |
-| Backend API | Go (chi + pgx) + PostgreSQL 16 / PostGIS, embedded migrations, LibreTranslate sidecar | [`backend/`](backend/) |
-| Analyst console + public view | Next.js 16 + React 19 + Tailwind + MapLibre | [`dashboard/`](dashboard/) |
+| Reporter mobile app | Kotlin Multiplatform + Compose (Android + iOS), Voyager + MVI + Koin, MapLibre | [github.com/IvanStepanok/beacon-mobile](https://github.com/IvanStepanok/beacon-mobile) |
+| Backend API | Go (chi + pgx) + PostgreSQL 16 / PostGIS, embedded migrations, LibreTranslate sidecar | [github.com/IvanStepanok/beacon-backend](https://github.com/IvanStepanok/beacon-backend) |
+| Analyst console + public view | Next.js 16 + React 19 + Tailwind + MapLibre | [github.com/IvanStepanok/beacon-dashboard](https://github.com/IvanStepanok/beacon-dashboard) |
 
 Docs live in [`docs/`](docs/). Start with [`docs/STATUS.md`](docs/STATUS.md), the honest
 record of what is built and what is not, then
@@ -54,12 +54,14 @@ Everything below is implemented. See STATUS.md for the equally honest list of wh
 - Privacy tiers: anonymous reporters (no account, pseudonymous device id); public reads are
   verified-only with coordinates coarsened to about 110 m; analyst access is RBAC + JWT across
   five crisis-scoped roles.
-- Measured scale: a 525k-report benchmark with every interactive query under 30 ms
-  ([`docs/LOAD-TEST.md`](docs/LOAD-TEST.md)).
+- Measured scale: a 525k-report benchmark with every interactive database query under 30 ms by
+  EXPLAIN ANALYZE execution time (end-to-end HTTP is ~140 ms–1 s at 500k; see
+  [`docs/LOAD-TEST.md`](docs/LOAD-TEST.md)).
 
 ## Quick start
 
-Each component runs on its own; full instructions in [`CONTRIBUTING.md`](CONTRIBUTING.md).
+Each component is its own public repo (links in the Components table above); clone the one you
+want. Full instructions in [`CONTRIBUTING.md`](CONTRIBUTING.md).
 
 ```bash
 # Backend (Go 1.26+, Docker for the DB)
