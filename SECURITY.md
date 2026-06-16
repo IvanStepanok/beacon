@@ -40,6 +40,11 @@ and makes them binding pre-deployment conditions.
   from a client-supplied header.
 - **HTTPS / TLS at the edge** — Traefik + Let's Encrypt in front of every public endpoint.
 - **On-device EXIF stripping** — GPS/timestamp/device tags removed from photos at capture.
+- **On-device face blur** — faces are detected and pixelated **on the device, before upload**
+  (ML Kit face detection on Android, Apple Vision on iOS; `Mobile app/shared/src/{android,ios}Main/
+  .../core/media/ImageRedactor.*.kt`, sample output in `test-shots/blur/`). Licence-plate
+  redaction is **best-effort** (a text + aspect-ratio heuristic, not a trained plate detector) —
+  always stated as such.
 - **Client-side image downscaling** before upload.
 - **Idempotent submit** (client-generated id primary key, `ON CONFLICT`) — no duplicate
   reports from retrying clients.
@@ -74,7 +79,7 @@ conditions (DPIA §10) and must **not** be cited as active mitigations:
 | Gate | Real current state |
 |---|---|
 | **Cluster-wide / backup / device-cache encryption at rest** | App-layer AES-256-GCM now seals photos + the TOTP secret (see above). Full-cluster PostgreSQL encryption, encrypted backups, and offline **device-cache** encryption remain deployment-environment responsibilities, not yet built in code. (`pgcrypto` is enabled but used only for `gen_random_uuid()`.) |
-| **On-device face / licence-plate blur** | Not implemented. Only a boolean flag is stored; no detection/blur runs (EXIF stripping IS real). |
+| **Blur-failure fallback + QA sampling** | Not implemented. **On-device face blur IS implemented** (see above) and runs before upload, but there is no automatic block/queue-for-review when the detector confidence is low, and no periodic QA sampling of stored photos. |
 | **Automated data-retention / purge job** | Not implemented. The retention SOP is documented policy only; no purge job exists in code. |
 | **Real identity provider** | Analyst accounts are seeded; production target is Azure AD / OIDC on the same JWT contract. (MFA/TOTP is now implemented on the local accounts.) |
 
