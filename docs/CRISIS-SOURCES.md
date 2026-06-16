@@ -16,8 +16,8 @@ _Last updated 2026-06-08._
 
 ## What a crisis is
 
-A **crisis** in Beacon is a **discrete event** (assessment unit) — an earthquake, a
-flood, a strike — **not** a permanent state. The challenge's scale numbers ("hundreds
+A **crisis** in Beacon is a **discrete event** (assessment unit): an earthquake, a
+flood, a strike, not a permanent state. The challenge's scale numbers ("hundreds
 of crises/year, up to 500k reports/crisis") describe events, not standing conditions.
 A long-running situation (e.g. a country's complex emergency) is modeled as a
 **Response** umbrella that many event-crises roll up to:
@@ -33,7 +33,7 @@ a `source`, and a `glide` (the global disaster id used as the cross-source dedup
 
 Reports are **decoupled** from crises: a citizen can report damage **anywhere, anytime**,
 even before any crisis is declared. The server assigns a report to a crisis **by
-space + time**; if nothing matches, the report is **pending** (`crisis_id = NULL`) and
+space + time**. If nothing matches, the report is **pending** (`crisis_id = NULL`) and
 may seed an emergent crisis (below).
 
 ## The three source legs (industry-standard hybrid)
@@ -48,7 +48,7 @@ against GLIDE and gated by analyst verification:
 | **Emergent from citizen reports** | bottom-up | ✅ built | fastest for localized/sudden events feeds miss or lag |
 
 This matches RAPIDA's own model (`challenge.md`): within 72 h it "combines satellite
-imagery, geospatial overlays, and remote analytics" — i.e. the event is known from
+imagery, geospatial overlays, and remote analytics", i.e. the event is known from
 feeds/satellite first, and our crowdsourced reports "complement … and validate
 preliminary findings." `need.md` explicitly states integration with **satellite/GIS
 systems will be preferred**.
@@ -61,7 +61,7 @@ systems will be preferred**.
 
 As designed, a background poller would run on startup and every `FEEDS_INTERVAL_MIN`
 (default 30 min); analysts could also trigger it on demand via
-`POST /api/v1/feeds/refresh`. Each connector would be best-effort and isolated — a feed
+`POST /api/v1/feeds/refresh`. Each connector would be best-effort and isolated: a feed
 that is down or changes shape is logged and skipped.
 
 | Source | Endpoint (no key) | Hazards | Mapping |
@@ -84,10 +84,10 @@ be a drop-in addition:
 
 | Source | Hazards | Why not yet wired |
 |---|---|---|
-| **ReliefWeb (OCHA) v2** | declared disasters + **GLIDE** registry | requires an approved `appname` (free registration) — trivial once granted; would enrich the GLIDE dedup layer |
+| **ReliefWeb (OCHA) v2** | declared disasters + **GLIDE** registry | requires an approved `appname` (free registration), trivial once granted; would enrich the GLIDE dedup layer |
 | **NASA FIRMS** | active wildfire/thermal detections (satellite, near-real-time) | requires a free `MAP_KEY` |
 | **Copernicus EMS** (+ GloFAS floods, EFFIS fires) | EU rapid-mapping activations | activation feeds less uniform; on the roadmap |
-| **ACLED / UCDP** | armed-conflict & political-violence events | API key + registration; licensing restrictions; data politically sensitive — analyst-gated ingestion planned |
+| **ACLED / UCDP** | armed-conflict & political-violence events | API key + registration; licensing restrictions; data politically sensitive, analyst-gated ingestion planned |
 | **PDC DisasterAWARE** | multi-hazard | partner access |
 
 ## Dedup & merge strategy
@@ -95,16 +95,16 @@ be a drop-in addition:
 _Items 1–3 below cover the roadmap feed legs and are **not in the current build**; only
 item 4 (report-level dedup) ships today._
 
-1. **Within a source** (roadmap) — deterministic id ⇒ re-poll is an idempotent upsert.
-2. **Across sources** (roadmap) — **GLIDE** is the join key. When two feeds publish the
+1. **Within a source** (roadmap): deterministic id ⇒ re-poll is an idempotent upsert.
+2. **Across sources** (roadmap): **GLIDE** is the join key. When two feeds publish the
    same event (e.g. a USGS and a GDACS earthquake), they would coexist as linked crises;
    the planned merge collapses them on matching GLIDE, else on a space + time + nature
    fuzzy match, keeping the most authoritative.
-3. **Emergent ↔ feed** (roadmap) — when a feed publishes an event that an emergent
+3. **Emergent ↔ feed** (roadmap): when a feed publishes an event that an emergent
    (`proposed`) citizen cluster already represents, the authoritative feed crisis would
    win and the emergent proposal's reports be reassigned to it. (The emergent → proposed →
    analyst-confirm/dismiss lifecycle that backs this is already built.)
-4. **Report-level dedup** — per-building versioning + capture-time proximity checks
+4. **Report-level dedup**: per-building versioning + capture-time proximity checks
    (already built) prevent duplicate reports for the same building.
 
 ## Config

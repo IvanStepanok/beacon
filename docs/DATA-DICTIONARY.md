@@ -6,13 +6,13 @@ Source of truth in code: `backend/internal/model/report.go` (JSON contract) and
 in `backend/internal/api/router.go` and documented in `backend/openapi.yaml`. Wire field
 names are **camelCase**; enum wire values are **lowercase**.
 
-> **Provenance caveat — admin codes are official P-codes only where a COD is ingested.**
+> **Provenance caveat: admin codes are official P-codes only where a COD is ingested.**
 > The admin-area fields (`adm1Pcode`/`adm2Pcode`/`adm3Pcode`, the nested `admin.admN.pcode`,
 > and the export `admin*_pcode` columns / `+code` HXL tags) carry **official OCHA COD-AB
 > P-codes where that country's COD has been ingested** (`source='cod'`, fetched lazily from
-> HDX and ranked above geoBoundaries — see `docs/STATUS.md` § Admin-boundary follow-ups).
+> HDX and ranked above geoBoundaries; see `docs/STATUS.md` § Admin-boundary follow-ups).
 > Where no COD is published for a country the value is a **`GB:`-prefixed geoBoundaries
-> shapeID** (or an illustrative seed code in demo data) — disclosed per row, so the file
+> shapeID** (or an illustrative seed code in demo data), disclosed per row, so the file
 > never asserts blanket P-code provenance and consumers can filter `GB:`-prefixed entries.
 
 ---
@@ -37,27 +37,27 @@ coexist (each client ignores keys it doesn't know).
 | `infraOtherDetail` | string | yes | Free text when `other` is selected |
 | `infraName` | string | yes | Optional facility/building name (e.g. a school or clinic name) for triage context |
 | `crisisNature` / `crisis` (alias) | string[] (enum) | no | `earthquake\|flood\|tsunami\|hurricane\|wildfire\|explosion\|chemical\|conflict\|civil_unrest` |
-| `lat`, `lng` | number | **yes** | Decimal degrees. `null` for a location-unresolved (landmark-only) report — never `0,0` |
+| `lat`, `lng` | number | **yes** | Decimal degrees. `null` for a location-unresolved (landmark-only) report, never `0,0` |
 | `locationResolved` | bool | no | `true` when a real GPS fix or tapped footprint produced a point |
 | `gpsAccuracyMeters` | number | yes | GPS fix accuracy (inbound alias: `accuracyMeters`) |
-| `buildingId` | string | yes | Building key for versioning/timeline — set **only** from a real tapped footprint (stable `fp-` polygon hash); GPS-only reports carry no building identity (pin + accuracy only) |
-| `buildingSource` | string | yes | `"footprint"` only when `buildingId` came from a tapped footprint polygon; `null` otherwise — clients never fabricate a building identity. Landmark-only reports have `locationResolved=false`. See `docs/DATA-QUALITY.md` |
+| `buildingId` | string | yes | Building key for versioning/timeline, set **only** from a real tapped footprint (stable `fp-` polygon hash); GPS-only reports carry no building identity (pin + accuracy only) |
+| `buildingSource` | string | yes | `"footprint"` only when `buildingId` came from a tapped footprint polygon; `null` otherwise, and clients never fabricate a building identity. Landmark-only reports have `locationResolved=false`. See `docs/DATA-QUALITY.md` |
 | `plusCode` | string | yes | On-device Open Location Code (replaced the retired `what3words` slot); stripped in public projection |
 | `landmark` | string | yes | Free-text landmark; stripped in public projection |
 | `place` | string | no | Human-readable place label |
 | `photoUrl` | string | yes | Photo endpoint URL; public only for verified reports |
 | `location` | object | no | Nested mirror for mobile: `{lat, lng, buildingId?, plusCode?, landmark?, gpsAccuracyMeters?}` (lat/lng nullable) |
-| `admin` | object | yes | Resolved chain `{adm0?, adm1?, adm2?, adm3?}`, each `{pcode, name}` — see naming caveat above |
-| `adm1Pcode`, `adm2Pcode`, `adm3Pcode` | string | yes | Flat admin aliases for filtering — see naming caveat above |
+| `admin` | object | yes | Resolved chain `{adm0?, adm1?, adm2?, adm3?}`, each `{pcode, name}`; see naming caveat above |
+| `adm1Pcode`, `adm2Pcode`, `adm3Pcode` | string | yes | Flat admin aliases for filtering; see naming caveat above |
 | `version` | int | no | Server-authoritative per-building version |
 | `supersedesReportId` | string | yes | Previous report for the same building |
-| `description` | object | yes | `{original, originalLang, translated, translatedLang?}` — `translated` coalesces to the original until LibreTranslate has run; stripped in public projection |
+| `description` | object | yes | `{original, originalLang, translated, translatedLang?}`; `translated` coalesces to the original until LibreTranslate has run; stripped in public projection |
 | `aiLevel` | string | yes | Advisory only (the AI helper is a stub today) |
 | `aiConfidence` | int | yes | Advisory only |
 | `photos` | object[] | no | `{localPath, remoteUrl?, sizeBytes}` |
 | `sizeBytes`, `sizeMb` | int64 / number | no | Payload size |
-| `modular` | object | yes | Secondary-impacts blob — see §2 |
-| `anonymization` | object | no | `{anonymous, exifStripped, facesBlurred, platesBlurred}` — `facesBlurred`/`platesBlurred` are honestly `false` (no blur is implemented) |
+| `modular` | object | yes | Secondary-impacts blob; see §2 |
+| `anonymization` | object | no | `{anonymous, exifStripped, facesBlurred, platesBlurred}`; `facesBlurred`/`platesBlurred` are honestly `false` (no blur is implemented) |
 | `clusters` | string[] (enum) | no | `slsc\|health\|wash\|education\|food_security\|protection\|logistics\|nutrition\|etc\|cccm\|early_recovery` |
 | `isMine` | bool | no | True when the caller's `X-Device-Id` matches the submitter |
 | `synced` | bool | no | Always true on server reads |
@@ -69,11 +69,11 @@ coexist (each client ignores keys it doesn't know).
 nested `location`; `accuracyMeters` is the inbound alias that coalesces into
 `gpsAccuracyMeters`; `lat`/`lng` may be `null` with `locationResolved: false` for
 landmark-only reports. Submission requires the `X-Device-Id` header (see §6) and is
-idempotent on `id` (`ON CONFLICT` upsert — safe client retries).
+idempotent on `id` (`ON CONFLICT` upsert, safe client retries).
 
 ## 2. Modular secondary-impacts blob (`modular`)
 
-The capture form — including this modular section — is served to clients by the backend's
+The capture form, including this modular section, is served to clients by the backend's
 **dynamic form-schema endpoint** (with per-crisis require/hide overrides). Exports keep the
 three stable modular columns and derive any extra modular sections dynamically from the
 report data itself, so new modular sections appear in exports automatically. The
@@ -94,10 +94,10 @@ Wire/stored shape (camelCase keys), all fields optional:
 
 In exports the modular blob flattens to snake_case columns: the three stable sections
 (`electricity` / `health_services` / `pressing_needs`) are always present, and any extra
-sections found in the report data are appended dynamically (camelCase key → snake_case;
+sections found in the report data are appended dynamically (camelCase key to snake_case;
 multi-values `;`-joined). The blob is stripped from the public projection.
 
-## 3. Damage classification — 3-tier mapping
+## 3. Damage classification: 3-tier mapping
 
 `damageTier` is the challenge's required 3-level core indicator, always derived server-side
 from the raw `damage` grade. Exports title-case it as `damage_classification`:
@@ -114,7 +114,7 @@ capture scale is the mandated 3 tiers (`minimal\|partial\|complete`).
 
 ## 4. Export schemas
 
-Endpoint: `GET /api/v1/reports/export?format=geojson|csv|gpkg|kml|shapefile` — analyst-only,
+Endpoint: `GET /api/v1/reports/export?format=geojson|csv|gpkg|kml|shapefile`, analyst-only,
 crisis-scoped; the `external_viewer` role is denied (403) and reads the coarsened public
 map instead (§5).
 
@@ -138,13 +138,13 @@ All formats share: coordinates in WGS84 decimal degrees; location-unresolved rep
 | `electricity`, `health_services`, `pressing_needs` | flattened modular blob (§2) |
 | `debris`, `buildingId`, `verification`, `synced`, `place` | as in §1 |
 | `accuracy_m` | GPS accuracy (string, may be empty) |
-| `admin1_pcode`, `admin2_pcode`, `admin3_pcode` | admin areas (COD-AB P-codes, or a `GB:`-prefixed shapeID fallback — see caveat) |
+| `admin1_pcode`, `admin2_pcode`, `admin3_pcode` | admin areas (COD-AB P-codes, or a `GB:`-prefixed shapeID fallback; see caveat) |
 
 ### 4.2 CSV with HXL tags (`format=csv`)
 
 Row 1 = headers, row 2 = HXL hashtags, then data. Admin HXL tags use `+code` (the COD-AB
-join key); a `GB:` prefix on a value marks a geoBoundaries shapeID fallback — not an official
-P-code — so provenance is disclosed per row rather than asserted blanket.
+join key); a `GB:` prefix on a value marks a geoBoundaries shapeID fallback (not an official
+P-code), so provenance is disclosed per row rather than asserted blanket.
 
 | Column | HXL tag |
 |---|---|
@@ -210,7 +210,7 @@ locked-down projection: coordinates rounded to 3 decimals (~110 m), and `submitt
 `plusCode`, `landmark`, `buildingId`, `buildingSource`, `infraName`, `gpsAccuracyMeters`,
 `description`, `clusters`,
 `aiLevel`/`aiConfidence`, the `modular` blob and the `anonymization` object are stripped
-(`infraName` is reporter free-text naming a specific building — kept public it could
+(`infraName` is reporter free-text naming a specific building; kept public it could
 de-coarsen the ~110 m grid); `photoUrl` is exposed only for verified reports.
 Authenticated analyst roles see full precision.
 
@@ -219,8 +219,8 @@ Authenticated analyst roles see full precision.
 Reporters are **anonymous to humans, pseudonymous to the system**. The mobile app generates
 a random device id and sends it as the `X-Device-Id` header; the server maps it to an
 internal submitter UUID. It is required on `POST /api/v1/reports` (and gates photo upload
-and `mine=true` listing), enabling idempotent resubmits, "my reports", and points — without
+and `mine=true` listing), enabling idempotent resubmits, "my reports", and points, without
 any account, name, phone number, or email. The id never appears in public responses or
-exports. Caveat: it is still a stable pseudonym — combined with precise geolocation it could
+exports. Caveat: it is still a stable pseudonym; combined with precise geolocation it could
 contribute to re-identification, which is why low-trust reads go through the §5 projection
 and the aggregate dataset is handled per `docs/governance/`.

@@ -1,6 +1,6 @@
 # Contributing to Beacon
 
-Thanks for helping improve Beacon — a community crowdsourcing app for post-crisis
+Thanks for helping improve Beacon, a community crowdsourcing app for post-crisis
 building-damage assessment. The project is Apache-2.0 (`LICENSE`); by contributing you agree
 your contributions are licensed under the same terms. For security issues, follow
 [`SECURITY.md`](SECURITY.md) instead of opening an issue.
@@ -14,7 +14,7 @@ your contributions are licensed under the same terms. For security issues, follo
 | `Mobile app/` | Kotlin Multiplatform + Compose Multiplatform (Android + iOS reporter app) |
 | `docs/` | Status, architecture, data quality, incentives, operational model, governance, data dictionary, load test, publication checklist |
 
-Start with [`docs/STATUS.md`](docs/STATUS.md) — the single source of truth for what is done
+Start with [`docs/STATUS.md`](docs/STATUS.md), the single source of truth for what is done
 vs not. The API surface is defined in `backend/internal/api/router.go` (overview in
 `backend/README.md`, field-level contract in
 [`docs/DATA-DICTIONARY.md`](docs/DATA-DICTIONARY.md), OpenAPI spec for the core
@@ -55,19 +55,19 @@ open iosApp/iosApp.xcodeproj                         # full iOS app via Xcode (s
 
 ## Pull request expectations
 
-- **Keep it small and focused** — one logical change per PR, with a description of what and why.
-- **Don't break the builds**: `go build ./... && go test ./...` (backend),
+- Keep it small and focused: one logical change per PR, with a description of what and why.
+- Don't break the builds: `go build ./... && go test ./...` (backend),
   `npm run lint && npm run build` (dashboard, no new lint errors),
   `:shared:compileCommonMainKotlinMetadata` + `:androidApp:assembleDebug` (mobile) must pass
   for the parts you touched.
-- **Match the surrounding style** — the codebase favors explicit, commented decisions; Go code
+- Match the surrounding style. The codebase favors explicit, commented decisions; Go code
   is `gofmt`-formatted (`make fmt`).
-- **Honesty rule for docs and UI copy**: never claim a control or feature that isn't
+- Honesty rule for docs and UI copy: never claim a control or feature that isn't
   implemented. Anything aspirational is marked PLANNED (see the convention in
   `docs/STATUS.md` and `docs/RAPID-DEPLOYMENT-48H.md`).
-- **API changes** must keep the one camelCase JSON contract serving both clients
+- API changes must keep the one camelCase JSON contract serving both clients
   (mobile + dashboard) backward compatible, and update
   [`docs/DATA-DICTIONARY.md`](docs/DATA-DICTIONARY.md) in the same PR.
-- **Localization**: user-facing mobile strings ship in all 6 UN languages (en, ar, es, fr,
+- Localization: user-facing mobile strings ship in all 6 UN languages (en, ar, es, fr,
   ru, zh). Flag machine translations for native review in the PR description.
-- **No secrets** in commits; never point tests at the production deployment.
+- No secrets in commits; never point tests at the production deployment.
