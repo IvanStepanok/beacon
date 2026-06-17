@@ -35,3 +35,9 @@
 **/.DS_Store
 *.swp
 .idea/
+
+# transient help-site screenshot staging
+/.help-tmp/
+
+# internal audits — never publish to the public front-door repo
+AUDIT-*.md

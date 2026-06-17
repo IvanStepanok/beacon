@@ -1,0 +1,16 @@
+services:
+  app:
+    build: .
+    container_name: beacon-help
+    restart: unless-stopped
+    networks:
+      - web
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.beacon-help.rule=Host(`beacon-help.stepanok.com`)"
+      - "traefik.http.routers.beacon-help.entrypoints=websecure"
+      - "traefik.http.routers.beacon-help.tls.certresolver=letsencrypt"
+      - "traefik.http.services.beacon-help.loadbalancer.server.port=80"
+networks:
+  web:
+    external: true
