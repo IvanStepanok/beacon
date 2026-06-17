@@ -26,7 +26,8 @@ tiers, exports, and integration pathways. Authoritative build state:
                 │   idempotent submit · crisis assignment (space+time +    │
                 │   geographic containment) · versioning · RBAC · rate     │
                 │   limits · public projection (~110 m) · form-schema ·    │
-                │   exports · MVT tiles ·                                  │
+                │   exports · MVT tiles (reports + buildings) ·            │
+                │   per-AOI footprint ingest ·                             │
                 │   boundary loader (Natural Earth + geoBoundaries ADM1)   │
                 └──────┬───────────────┬──────────────────┬────────────────┘
                        ▼               ▼                  ▼
@@ -47,7 +48,8 @@ All three repos in this workspace: `backend/` (Go), `Mobile app/` (KMP), `dashbo
 1. Capture (offline-first). Guided wizard in the app: in-app camera (EXIF GPS/time
    stripped on device), 3-level damage classification (minimal / partial / complete),
    infrastructure (+ optional
-   `infraName`), location (GPS fix, tapped building footprint → stable `fp-` hash, or
+   `infraName`), location (GPS fix; tapped building footprint → real authoritative building
+   id + provenance where an AOI pack is loaded, else an `fp-` basemap-ring hash; or
    landmark-only), Plus Code computed on device. Capture form (incl. modular questions)
    comes from the server's dynamic form-schema endpoint with per-crisis require/hide
    overrides, cached for offline use.
@@ -70,7 +72,10 @@ All three repos in this workspace: `backend/` (Go), `Mobile app/` (KMP), `dashbo
    report needs an explicit `force` + note, both audited) via
    `PATCH /api/v1/reports/{id}/verification`.
 8. Out. Interop exports (below), the coarsened public heatmap (`/public`), MVT tiles
-   (`GET /api/v1/tiles/reports/{z}/{x}/{y}`), and the print brief for offline handoff.
+   (`GET /api/v1/tiles/reports/{z}/{x}/{y}` and the authoritative footprint overlay
+   `GET /api/v1/tiles/buildings/{z}/{x}/{y}`, layer `buildings`, `store.BuildingTileMVT`,
+   populated per-AOI via the `cmd/ingest-footprints` path), and the print brief for offline
+   handoff.
 
 ## Scale (measured, [`LOAD-TEST.md`](./LOAD-TEST.md))
 

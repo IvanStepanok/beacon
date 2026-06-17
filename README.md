@@ -40,8 +40,9 @@ All four links are live now; the `/public` heatmap needs no login.
 Everything below is implemented. See STATUS.md for the equally honest list of what isn't.
 
 - Offline-first capture: in-app camera (EXIF stripped on the device), 3-level damage grade
-  (minimal / partial / complete), building-footprint snap for a stable building identity,
-  on-device Plus Codes, an outbox that survives dead networks, and downloadable map packs.
+  (minimal / partial / complete), tap an authoritative building footprint (ingested per crisis
+  AOI) for a real, provenance-tagged building identity with the OpenStreetMap basemap footprint
+  as the fallback, on-device Plus Codes, an outbox that survives dead networks, and downloadable map packs.
 - Six UN languages with Arabic right-to-left in the app. Free-text descriptions are
   translated to English at intake by a self-hosted LibreTranslate, and the original is kept.
 - Self-proposing crises: a cluster of community reports can propose a new crisis for an

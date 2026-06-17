@@ -40,7 +40,7 @@ one location quality for another:
 
 | Quality | How it's produced | Stability |
 |---|---|---|
-| **Footprint** (`buildingSource="footprint"`) | Reporter taps a map building footprint → stable `fp-` FNV-1a hash of the normalized ring (`Mobile app/.../map/BeaconMap.kt`) | Strong: re-reports of the same footprint always collide into one chain |
+| **Footprint** (`buildingSource="footprint"`) | Reporter taps a map building footprint. Where an authoritative AOI pack is loaded the tap returns the real source id + provenance (e.g. `osm:way/12345`; see `backend/docs/BUILDING-FOOTPRINTS.md`); otherwise it falls back to a stable `fp-` FNV-1a hash of the normalized basemap ring (`Mobile app/.../map/BeaconMap.kt`) | Strong: re-reports of the same footprint always collide into one chain |
 | **GPS pin only** | No footprint tapped → the report carries the pin + `gpsAccuracyMeters` and **no building identity** (`buildingId` null — a coordinate-derived id would defeat the near-dup guard) | Honest about precision; the 25 m / 10 min near-dup guard applies |
 | **Landmark-unresolved** | No fix at all (indoors, jammed GPS) → free-text landmark only; `lat`/`lng` stored **NULL**, `locationResolved=false` — never `0,0` (migration `00012_location_unresolved.sql`) | Located by a human later; excluded from geometric exports (blank geometry) |
 

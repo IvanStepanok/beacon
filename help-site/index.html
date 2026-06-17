@@ -190,7 +190,7 @@
   <section class="hero" style="border-top:none">
     <div class="eyebrow">Entry · UNDP crisis-mapping challenge</div>
     <h1>Crisis damage mapping by the people on the ground.</h1>
-    <p class="lede">After an earthquake, flood or conflict, Beacon turns affected residents into a sensor network. Anyone can photograph a damaged building, grade it, and pin it to a footprint — even with no signal. An analyst team verifies and triages in near real time, then exports the result to the tools responders already use.</p>
+    <p class="lede">After an earthquake, flood or conflict, Beacon turns affected residents into a sensor network. Anyone can photograph a damaged building, grade it, and pin it to an authoritative building footprint — even with no signal. An analyst team verifies and triages in near real time, then exports the result to the tools responders already use.</p>
     <div class="cta">
       <a class="btn primary" href="https://beacon.stepanok.com/login" target="_blank" rel="noopener">Open the analyst console <span class="arr">→</span></a>
       <a class="btn ghost" href="#reporter">See the reporter app</a>
@@ -241,7 +241,7 @@
       <figure class="phone"><img src="assets/m_crisis.webp" alt="Crisis-nature multi-select grouped by category" loading="lazy" width="640" height="1391"/>
         <figcaption><b>2 · Structured detail</b>Crisis nature, infrastructure type and debris — the multi-selects the assessment standard asks for.</figcaption></figure>
       <figure class="phone"><img src="assets/m_location.webp" alt="Location step snapping the report to a building footprint with a Plus Code" loading="lazy" width="640" height="1391"/>
-        <figcaption><b>3 · Pin to a footprint</b>The report snaps to a building footprint, with an offline Plus Code as a no-GPS fallback.</figcaption></figure>
+        <figcaption><b>3 · Pin to a footprint</b>The report snaps to an authoritative building footprint (ingested for the crisis AOI), returning a real building id and its source. Outside an AOI pack it falls back to the basemap footprint, and an offline Plus Code is the no-GPS fallback.</figcaption></figure>
       <figure class="phone"><img src="assets/m_review.webp" alt="Review step showing the report is anonymous and EXIF stripped" loading="lazy" width="640" height="1391"/>
         <figcaption><b>4 · Review &amp; send</b>No name, no phone. Photo location metadata is stripped on the device before the report leaves the phone.</figcaption></figure>
     </div>
@@ -287,7 +287,7 @@
     <div class="grid g2" style="margin-top:26px">
       <figure>
         <div class="shot"><img src="assets/dash_map.webp" alt="Live map with clustered, colour-coded damage pins over Antakya" loading="lazy" width="1440" height="750"/></div>
-        <div class="shotcap"><b>Live map</b> — every report on its footprint, filterable by grade and verification status.</div>
+        <div class="shotcap"><b>Live map</b> — every report on its authoritative building footprint (vector-tile overlay from the ingested AOI pack), filterable by grade and verification status.</div>
       </figure>
       <figure>
         <div class="shot"><img src="assets/dash_reports.webp" alt="Reports table with damage and status tags and admin-area column" loading="lazy" width="1440" height="750"/></div>
@@ -452,6 +452,7 @@
         <tr><td>Reporter app — real camera, GPS, EXIF stripping, on-device face blur, live sync</td><td><span class="pill live"><span class="dot"></span>Live</span></td></tr>
         <tr><td>On-device AI damage suggestion (advisory, human confirms)</td><td><span class="pill live"><span class="dot"></span>Live</span></td></tr>
         <tr><td>Offline map packs (MapLibre offline regions, real progress)</td><td><span class="pill live"><span class="dot"></span>Live · Android &amp; iOS</span></td></tr>
+        <tr><td>Authoritative building footprints — OSM / Open Buildings / gov shapefile ingested per crisis AOI, served as vector tiles with provenance; basemap fallback outside an AOI pack</td><td><span class="pill live"><span class="dot"></span>Live</span></td></tr>
         <tr><td>Interop exports — GeoJSON, HXL-CSV, GeoPackage, KML, Shapefile</td><td><span class="pill live"><span class="dot"></span>Live</span></td></tr>
         <tr><td>At-rest encryption (photos + secrets), TOTP MFA, enforced DB-TLS, mobile cert-pinning</td><td><span class="pill live"><span class="dot"></span>Live</span></td></tr>
         <tr><td>6 UN languages + Arabic RTL · reporter-initiated takedown (true erasure)</td><td><span class="pill live"><span class="dot"></span>Live</span></td></tr>

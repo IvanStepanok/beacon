@@ -16,6 +16,20 @@ Three clients on one backend: **reporter mobile app** (KMP/Compose, Android+iOS)
 
 ---
 
+## 🆕 2026-06-17 session — changelog (authoritative building footprints + viewport pins)
+
+Authoritative building footprints shipped (ground-truth doc: `backend/docs/BUILDING-FOOTPRINTS.md`):
+- Backend migration `00025` adds `buildings.footprint` plus `source`/`source_id`/`source_version` provenance; building id scheme is `buildings.id = "<source>:<source_id>"` (e.g. `osm:way/12345`), and `reports.building_id` references it.
+- Public `GET /api/v1/tiles/buildings/{z}/{x}/{y}` MVT (layer `buildings`, `store.BuildingTileMVT`).
+- Ingest CLI `backend/cmd/ingest-footprints` (GeoJSON in; operator converts OSM / Google-Microsoft Open Buildings / a gov shapefile via `ogr2ogr`).
+- 8,331 real OpenStreetMap Antakya/Hatay footprints ingested into prod with provenance (`source=osm`, real `osm:way/<id>`).
+- Dashboard `/map` + the mobile capture map render the overlay; a tap returns the real building id (`bid`) with provenance.
+- Caveats (do not overclaim): authoritative footprints exist only where ingested (currently the Antakya/Hatay AOI); elsewhere it falls back to the OpenStreetMap basemap footprint, and where neither exists, GPS or a written landmark. The offline authoritative-tile path on mobile is not yet device-verified (works online; offline falls back to the basemap pack).
+
+Mobile: map pins + damage counts now follow the visible region as the user pans/zooms (`ReportRepository.setPinViewport`, latest-per-building by bbox).
+
+---
+
 ## 🆕 2026-06-10 session — changelog (verification quality + public tier + submission docs)
 
 Fixes from the security audit + external review, landing as one change set across all three repos:
@@ -25,7 +39,7 @@ Backend:
 - No earthquake default. A report with no hazard selected is stored with an empty `crisisNature`, no longer silently defaulted to `earthquake`.
 - Geographic containment. A report claiming a pinned crisis must fall inside that crisis's spatial extent, else it goes through normal space+time assignment (no more cross-country attachments).
 - Verification photo-gate. Verifying a photo-less report requires an explicit analyst `force` + note, both audited (`report_verification_audit`).
-- New report fields: `infraName` (named facility), `buildingSource` (`"footprint"` only when a real footprint polygon was tapped; `buildingId` is set solely from that tap, as a stable `fp-` polygon hash; GPS-only reports carry no building identity, just the pin + accuracy; landmark-only reports are `locationResolved=false`), `plusCode` formalized (legacy `what3words` slot retired).
+- New report fields: `infraName` (named facility), `buildingSource` (`"footprint"` only when a real footprint polygon was tapped; `buildingId` is set solely from that tap, as a stable `fp-` polygon hash; GPS-only reports carry no building identity, just the pin + accuracy; landmark-only reports are `locationResolved=false`) _(historical: the `fp-` hash is now the fallback; where an authoritative AOI pack is loaded the tap returns a real footprint id `<source>:<source_id>` with provenance; see the 2026-06-17 DONE entry above)_, `plusCode` formalized (legacy `what3words` slot retired).
 - Dynamic form-schema endpoint. Clients fetch the capture-form schema (incl. modular questions) from the server, with per-crisis require/hide overrides. Exports keep three stable modular columns (`electricity`/`health_services`/`pressing_needs`) and derive any extra modular sections dynamically from the report data, so new modular sections appear in exports automatically.
 - Durable photo storage. Uploaded photos persist on the named `beacon-photos` volume across redeploys; seed photos now ship real CC-attributed imagery with relative timestamps.
 

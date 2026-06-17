@@ -40,7 +40,7 @@ coexist (each client ignores keys it doesn't know).
 | `lat`, `lng` | number | **yes** | Decimal degrees. `null` for a location-unresolved (landmark-only) report, never `0,0` |
 | `locationResolved` | bool | no | `true` when a real GPS fix or tapped footprint produced a point |
 | `gpsAccuracyMeters` | number | yes | GPS fix accuracy (inbound alias: `accuracyMeters`) |
-| `buildingId` | string | yes | Building key for versioning/timeline, set **only** from a real tapped footprint (stable `fp-` polygon hash); GPS-only reports carry no building identity (pin + accuracy only) |
+| `buildingId` | string | yes | Building key for versioning/timeline, set from a tapped footprint: the authoritative source id `<source>:<source_id>` where an AOI pack is loaded, else a stable `fp-` basemap-ring hash (fallback); GPS-only reports carry no building identity (pin + accuracy only) |
 | `buildingSource` | string | yes | `"footprint"` only when `buildingId` came from a tapped footprint polygon; `null` otherwise, and clients never fabricate a building identity. Landmark-only reports have `locationResolved=false`. See `docs/DATA-QUALITY.md` |
 | `plusCode` | string | yes | On-device Open Location Code (replaced the retired `what3words` slot); stripped in public projection |
 | `landmark` | string | yes | Free-text landmark; stripped in public projection |
